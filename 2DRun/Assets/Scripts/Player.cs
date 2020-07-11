@@ -41,6 +41,14 @@ public class Player : MonoBehaviour
     [Header("角色是否死亡"), Tooltip("True 代表死亡，False 代表尚未死亡")]
     public bool dead;
     #endregion
+    [Header("動畫控制器")]
+    public Animator ani;
+    [Header("膠囊碰撞器")]
+    public CapsuleCollider2D cc2d;
+    [Header("剛體")]
+    public Rigidbody2D rig;
+
+    public bool isGround;
 
     #region 方法區域
     // C# 括號符號都是成對出現的：() [] {} "" ''
@@ -53,9 +61,29 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 角色的跳躍功能：跳躍動畫、播放音效與往上跳
     /// </summary>
+    private void Move()
+    {
+        if (rig.velocity.magnitude < 10) 
+        {
+            rig.AddForce(new Vector2(speed, 0));
+        }
+      
+    }
     private void Jump()
     {
-        print("跳躍");
+        bool Jump = Input.GetKey(KeyCode.A);
+
+        ani.SetBool("跳躍開關", !isGround);
+
+        if (isGround)
+        {
+            if (Jump)
+            {
+                isGround = false;
+                rig.AddForce(new Vector2(0, height));
+
+            }
+        }
     }
 
     /// <summary>
@@ -63,7 +91,20 @@ public class Player : MonoBehaviour
     /// </summary>
     private void Slide()
     {
-        print("滑行");
+        bool key = Input.GetKey(KeyCode.Z);
+
+        ani.SetBool("滑行開關", key);
+
+        if (key)
+        {
+            cc2d.offset = new Vector2(-0.2f, -1.25f);
+            cc2d.size = new Vector2(1.8f, 2.15f);
+        }
+        else
+        {
+            cc2d.offset = new Vector2(-0.2f, -0.25f);
+            cc2d.size = new Vector2(1.8f, 4.3f);
+        }
     }
 
     /// <summary>
@@ -97,8 +138,7 @@ public class Player : MonoBehaviour
     // 初始化：
     private void Start()
     {
-        // 呼叫跳躍方法
-        Jump();
+
     }
     // 更新 Update
     // 播放遊戲後一秒執行約 60 次 - 60FPS
@@ -106,6 +146,19 @@ public class Player : MonoBehaviour
     private void Update()
     {
         Slide();
+       
+    }
+    private void FixedUpdate()
+    {
+        Jump();
+        Move();
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.name == "地板")
+        {
+            isGround = true;
+        }
     }
     #endregion
 }
